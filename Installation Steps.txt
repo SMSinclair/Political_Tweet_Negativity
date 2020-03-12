@@ -1,52 +1,105 @@
-Before you can download your own data, you need to get a Twitter Developer account (it is free unless you want some special features I am not using)
+Before you can download your own data, you need to get a Twitter Developer 
+account (it is free unless you want some special features I am not using)
 
 Official documentation is here:
 https://developer.twitter.com/en/docs/basics/getting-started
-Scroll down to get to the section (How to get started with the Twitter APIs) which will take some time for Twitter to approve your access.
+Scroll down to get to the section (How to get started with the Twitter APIs)
+which will take some time for Twitter to approve your access.
 
-Or Google Twitter API getting started or tutorial to find something more useful to you.
+Or Google Twitter API getting started or tutorial to find something more useful
+to you.
 
 Once you get your Twitter API going, you need to edit the file 
-Twitter_Account_List.r
-to put in the key(s) you get from your approved Twitter developer account.
+Twitter_Account_List.r to put in the key(s) you get from your approved Twitter 
+developer account.
 
 Copy all files from this repository to some subdirectory on your computer
 
-While waiting for Twitter to get you access to its API, you can do the rest of the install.
+While waiting for Twitter to get you access to its API, you can do the rest of 
+the install.
 
-Install SQL Server 2019 for Windows (The Developer's Edition is free if you use it personally, not commercially). There is a LINUX edition. I don't know LINUX so you will need to get help from others where it differs from the Windows version.
+Install SQL Server 2019 for Windows (The Developer's Edition is free if you use 
+it personally, not commercially). There is a LINUX edition. I don't know LINUX 
+so you will need to get help from others where it differs from the Windows 
+version.
 
 SQL Install Instructions (see SQL_Server_2019_Install.txt)
 
-Once you have SQL Server installed and configured, you can run the DDL.sql file within SQL Server to create the empty database, optimizations and custom programs stored in the database. Change the name of the database in the top dozen or so lines if you want the database name to be different.
+Once you have SQL Server installed and configured, you can run the DDL.sql file 
+within SQL Server to create the empty database, optimizations and custom 
+programs stored in the database. Change the name of the database in the top 
+dozen or so lines if you want the database name to be different.
 
-At this point you need Twitter API working. So don't continue here until that is done.
+At this point you need Twitter API working. So don't continue here until that 
+is done.
 
-Then using R, run Get_Politicians.r to query Twitter to give you basic information about the politicians (whose followers you want to analyze). Adjust this file if you have changed the default database name.
-A list of politicians twitter accounts is already included. Adjust it to fit your interests.
+Then using R, run Get_Politicians.r to query Twitter to give you basic 
+information about the politicians (whose followers you want to analyze). Adjust 
+this file if you have changed the default database name. A list of politicians 
+twitter accounts is already included. Adjust it to fit your interests.
 
-On SQL Server, run Update_Politician_Names.sql to assign a name for each candidate (necessary in your analysis because some politicians may have multiple twitter accounts and you can't be sure if their fans follow one or all of those accounts).
+On SQL Server, run Update_Politician_Names.sql to assign a name for each 
+candidate (necessary in your analysis because some politicians may have 
+multiple twitter accounts and you can't be sure if their fans follow one or all 
+of those accounts).
 
-Run in R the file Get_Followers.R inserting the twitter handles for the politicians you are interested in. 
+Run in R the file Get_Followers.R inserting the twitter handles for the 
+politicians you are interested in. 
 
-WARNING: Some politicians have a LOT of followers and this can take hours (or days) if you use this program or just because the Twitter API rate limits are causing you problems. I recommend commenting out all but one line at the bottom for one politician (the one with the least followers) first. Then depending on how well that goes, comment out that one and uncomment another... and so on.
+WARNING: Some politicians have a LOT of followers and this can take hours (or 
+days) if you use this program or just because the Twitter API rate limits are 
+causing you problems. I recommend commenting out all but one line at the bottom 
+for one politician (the one with the least followers) first. Then depending on 
+how well that goes, comment out that one and uncomment another... and so on.
 
-This R program will download all the followers into files on your local commputer. 
+This R program will download all the followers into files on your local 
+commputer. 
 
-You will then need to change the subdirectory name in DDL.sql to the subdirectory where you put all these files/programs. In DDL.sql look for the string C:\\Politics\\Twitter_Politician_Supporters\\ to find where that string needs to be changed to your directory. Use two \\ instead of one for subdirectory speparators. If you needed to make this change, execute the block of code in SQL that starts with Create or Alter Procedure Mass_Follower_Import until you see the line that just says GO about 40 lines later. 
+You will then need to change the subdirectory name in DDL.sql to the 
+subdirectory where you put all these files/programs. In DDL.sql look for the 
+string C:\\Politics\\Twitter_Politician_Supporters\\ to find where that string 
+needs to be changed to your directory. Use two \\ instead of one for 
+subdirectory speparators. If you needed to make this change, execute the block 
+of code in SQL that starts with Create or Alter Procedure Mass_Follower_Import 
+until you see the line that just says GO about 40 lines later. 
 
 You then run this code in SQL like this: 
-Exec Mass_Follower_Import 'POTUS' (or whatever politician's twitter handle you are doing)
+Exec Mass_Follower_Import 'POTUS' (or whatever politician's twitter handle you 
+are doing)
 
-That SQL code will read all those files (in this case for the subdirectory POTUS) and import the data into SQL Server. It runs much faster than the R code, but you will want to delete all those files on your computer after this runs to get the space back on your hard drive.
+That SQL code will read all those files (in this case for the subdirectory 
+POTUS) and import the data into SQL Server. It runs much faster than the R 
+code, but you will want to delete all those files on your computer after this 
+runs to get the space back on your hard drive.
 
-Next, to fill in the rest of the data for a user profile you can run the R script get_follower_profile.R
-Change the database name in this script if you aren't using the default database name.
+Next, to fill in the rest of the data for a user profile you can run the R 
+script get_follower_profile.R. Change the database name in this script if 
+you aren't using the default database name.
 
-Because of some poor garbage collection/memory leaks in R or some library it is using, I recommend running this as a repeated task (i.e. with task scheduler). The script as is runs for 15 minutes (or sooner if it is done downloading all needed user profiles' info). Then it stops. By running this script as a task repeatedly, each time it stops it releases all memory so the next script can start again using less memory.
+Because of some poor garbage collection/memory leaks in R or some library it 
+is using, I recommend running this as a repeated task (i.e. with task 
+scheduler). The script as is runs for 15 minutes (or sooner if it is done 
+downloading all needed user profiles' info). Then it stops. By running 
+this script as a task repeatedly, each time it stops it releases all 
+memory so the next script can start again using less memory.
 
-This script isn't strictly necessary to get tweets. When you get tweets, if the user profile isn't finished, the tweet code for a given twitter account will also import the full user profile of that tweet. But by using get_follower_profile.r AND get_tweets.r (described after this) they are using different twitter api functions so different rate limits apply.
+This script isn't strictly necessary to get tweets. When you get tweets, if the 
+user profile isn't finished, the tweet code for a given twitter account will 
+also import the full user profile of that tweet. But by using 
+get_follower_profile.r AND get_tweets.r (described after this) they are using 
+different twitter api functions so different rate limits apply.
 
-Run the R script Get_Tweets.r to get tweets for users. Adjust the database name in it if you changed your default database name. Like Get_follower_profile.R there are memory leak/garbage collections so if you continue to run it long enough without quitting you will use all your memory. So there is a 15 minute time limit within this script. Run the script repeatedly in task scheduler (i.e. every 15 minutes) to avoid this problem. This script also downloads the mentions and hashtags of the tweet. It only downloads tweets since 1/1/2015. If you change increase or descrease the tweet id in the API calls you can get more or less tweets. This script also marks a user inactive if they have no tweets since 2015 (i.e. no tweets were downloaded for that user).
+Run the R script Get_Tweets.r to get tweets for users. Adjust the database name 
+in it if you changed your default database name. Like Get_follower_profile.R 
+there are memory leak/garbage collections so if you continue to run it long 
+enough without quitting you will use all your memory. So there is a 15 minute 
+time limit within this script. Run the script repeatedly in task scheduler 
+(i.e. every 15 minutes) to avoid this problem. This script also downloads the 
+mentions and hashtags of the tweet. It only downloads tweets since 1/1/2015. If 
+you change increase or descrease the tweet id in the API calls you can get more 
+or less tweets. This script also marks a user inactive if they have no tweets 
+since 2015 (i.e. no tweets were downloaded for that user).
 
-To score the tweets you have in the database (that haven't already been scored), run the SQL script Sentiment.sql. Change the database name in this script if you are using a non-default database name.
+To score the tweets you have in the database (that haven't already been 
+scored), run the SQL script Sentiment.sql. Change the database name in this 
+script if you are using a non-default database name.
